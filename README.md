@@ -1,2 +1,2 @@
 # raycasting-engine
-Creating a raycasting rendering engine from scratch
+Project of creating a raycasting rendering engine in C++ using OpenGL.
