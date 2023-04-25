@@ -24,6 +24,7 @@
     <ProjectGuid>{c29ba2eb-306a-439e-889e-e42ae423551c}</ProjectGuid>
     <RootNamespace>OpenGlTest</RootNamespace>
     <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
+    <ProjectName>Raycast-Engine</ProjectName>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
