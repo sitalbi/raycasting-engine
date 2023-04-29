@@ -1,10 +1,12 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <GL/freeglut.h>
-#include <GL/glu.h>
+#include <math.h>
+#define PI 3.141592653589793238
 
 
 float playerX, playerY; // player coordinates
+float playerDirX, playerDirY, playerAngle; //player rotation
 float speed; // player speed
 
 int mapX = 8, mapY = 8, mapSize;
@@ -14,7 +16,7 @@ int map[] =
   1,0,0,0,1,1,1,1,
   1,0,0,0,0,0,0,1,
   1,0,0,0,0,0,0,1,
-  1,0,0,0,1,0,0,1,
+  1,0,1,0,1,0,0,1,
   1,0,0,0,1,0,0,1,
   1,1,1,1,1,1,1,1
 };
@@ -25,6 +27,18 @@ void drawPlayer() {
     glBegin(GL_POINTS);
     glVertex2i(playerX, playerY);
     glEnd();
+
+    /*glLineWidth(3);
+    glBegin(GL_LINES);
+    glVertex2i(playerX, playerY);
+    glVertex2i(playerX+playerDirX, playerY+playerDirY*5);
+    glEnd();*/
+}
+
+void drawRays() {
+    //Implementation of the DDA algorithm
+    
+
 }
 
 void drawTileMap() {
@@ -36,7 +50,7 @@ void drawTileMap() {
             else {
                 glColor3f(0.3, 0.3, 0.3); //grey
             }
-            // drawing the tile ("+-1" to have a grid gap
+            // drawing the tile ("+-1" to have a grid gap)
             glBegin(GL_POLYGON);
             glVertex2i(i * mapSize + 1, j * mapSize + 1);
             glVertex2i(i * mapSize + 1, (j * mapSize) + mapSize - 1);
@@ -48,10 +62,31 @@ void drawTileMap() {
 }
 
 void keyBoardCheck(unsigned char key, int x, int y) {
-    if (key == 'z') playerY -= speed;
-    if (key == 's') playerY += speed;
-    if (key == 'q') playerX -= speed;
-    if (key == 'd') playerX += speed;
+    if (key == 'q') {
+        playerAngle -= 0.1;
+        if (playerAngle < 0) {
+            playerAngle += 2 * PI;
+        }
+        playerDirX = cos(playerAngle) * 5;
+        playerDirY = sin(playerAngle) * 5;
+    }
+    if (key == 'd') {
+        playerAngle += 0.1;
+        if (playerAngle > 2 * PI) {
+            playerAngle = 0;
+        }
+        playerDirX = cos(playerAngle) * 5;
+        playerDirY = sin(playerAngle) * 5;
+    }
+    if (key == 'z') {
+        playerX += playerDirX;
+        playerY += playerDirY;
+    }
+    if (key == 's') {
+        playerX -= playerDirX;
+        playerY -= playerDirY;
+    }
+    
     glutPostRedisplay();
 }
 
@@ -61,6 +96,8 @@ void initialization() {
     playerX = 100;
     playerY = 100;
     speed = 5;
+    playerDirX = cos(playerAngle) * 5;
+    playerDirY = sin(playerAngle) * 5;
 }
 
 void display() {
@@ -68,6 +105,7 @@ void display() {
     glClear(GL_COLOR_BUFFER_BIT);
     drawTileMap();
     drawPlayer();
+    drawRays();
     glutSwapBuffers();
 }
 
