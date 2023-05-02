@@ -32,12 +32,6 @@ void drawPlayer() {
     glBegin(GL_POINTS);
     glVertex2i(playerX * mapSize, playerY * mapSize);
     glEnd();
-
-    /*glLineWidth(3);
-    glBegin(GL_LINES);
-    glVertex2i(playerX* mapSize, playerY* mapSize);
-    glVertex2i(playerX * mapSize + playerDirX*5, playerY* mapSize +playerDirY*5);
-    glEnd();*/
 }
 
 /**
@@ -46,102 +40,110 @@ void drawPlayer() {
 */
 void drawRays() {
     
-    float rayDirX = playerDirX;
-    float rayDirY = playerDirY;
+    for (int i = -10; i < 20; i++) {
 
-    float rayX = playerX;
-    float rayY = playerY;
+        float rayAngle = playerAngle + (float)i / 20;
+        if (rayAngle < 0) {
+            playerAngle += 2 * PI;
+        }
+        if (playerAngle > 2*PI) {
+            playerAngle -=2*PI;
+        }
 
-    //ray map coordinates at each step
-    int mapX = rayX;
-    int mapY = rayY;
+        float rayDirX = cos(rayAngle);
+        float rayDirY = -sin(rayAngle);
 
-    //length of ray from current position to next x or y-side
-    float sideDistX;
-    float sideDistY;
+        float rayX = playerX;
+        float rayY = playerY;
 
-    //length of ray from one x or y-side to next x or y-side
-    float deltaDistX = sqrt(1 + (rayDirY * rayDirY) / (rayDirX * rayDirX));
-    float deltaDistY = sqrt(1 + (rayDirX * rayDirX) / (rayDirY * rayDirY));
+        //ray map coordinates at each step
+        int mapX = rayX;
+        int mapY = rayY;
 
-    //what direction to step in x or y-direction (either +1 or -1)
-    int stepX;
-    int stepY;
+        //length of ray from current position to next x or y-side
+        float sideDistX;
+        float sideDistY;
 
-    bool hit = false; 
-    int side; //horizontal or vertical wall hit?
-        
-    //initialize step and calculate initial sideDists
-    if (rayDirX < 0)
-    {
-        stepX = -1;
-        sideDistX = (rayX - (float)mapX) * deltaDistX;
-    }
-    else
-    {
-        stepX = 1;
-        sideDistX = ((float)mapX + 1.0 - rayX) * deltaDistX;
-    }
-    if (rayDirY < 0)
-    {
-        stepY = -1;
-        sideDistY = (rayY - (float)mapY) * deltaDistY;
-    }
-    else
-    {
-        stepY = 1;
-        sideDistY = ((float)mapY + 1.0 - rayY) * deltaDistY;
-    }
-    
-    //perform DDA
-    while (!hit) {
-        //jump to next map square, either in x-direction, or in y-direction
-        if (sideDistX < sideDistY)
+        //length of ray from one x or y-side to next x or y-side
+        float deltaDistX = sqrt(1 + (rayDirY * rayDirY) / (rayDirX * rayDirX));
+        float deltaDistY = sqrt(1 + (rayDirX * rayDirX) / (rayDirY * rayDirY));
+
+        //what direction to step in x or y-direction (either +1 or -1)
+        int stepX;
+        int stepY;
+
+        bool hit = false;
+        int side; //horizontal or vertical wall hit?
+
+        //initialize step and calculate initial sideDists
+        if (rayDirX < 0)
         {
-            mapX += stepX;
-            sideDistX += deltaDistX;
-            side = 0;
+            stepX = -1;
+            sideDistX = (rayX - (float)mapX) * deltaDistX;
         }
         else
         {
-            mapY += stepY;
-            sideDistY += deltaDistY;
-            side = 1;
+            stepX = 1;
+            sideDistX = ((float)mapX + 1.0 - rayX) * deltaDistX;
+        }
+        if (rayDirY < 0)
+        {
+            stepY = -1;
+            sideDistY = (rayY - (float)mapY) * deltaDistY;
+        }
+        else
+        {
+            stepY = 1;
+            sideDistY = ((float)mapY + 1.0 - rayY) * deltaDistY;
         }
 
-        //Check if the ray is inside the map
-        if (mapX >= 0 && mapX < 8 && mapY >= 0 && mapY < 8) {
-            if (map[mapX + (mapY * mapHeight)] == 1) {  //Check if the ray has hit a wall
+        //perform DDA
+        while (!hit) {
+            //jump to next map square, either in x-direction, or in y-direction
+            if (sideDistX < sideDistY)
+            {
+                mapX += stepX;
+                sideDistX += deltaDistX;
+                side = 0;
+            }
+            else
+            {
+                mapY += stepY;
+                sideDistY += deltaDistY;
+                side = 1;
+            }
+
+            //Check if the ray is inside the map
+            if (mapX >= 0 && mapX < 8 && mapY >= 0 && mapY < 8) {
+                if (map[mapX + (mapY * mapHeight)] == 1) {  //Check if the ray has hit a wall
+                    hit = true;
+                }
+                /*else { //Color the cells to debug
+                    glBegin(GL_POLYGON);
+                    glColor3f(0, 250, 0);
+                    glVertex2i(mapX * mapSize + 1, mapY * mapSize + 1);
+                    glVertex2i(mapX * mapSize + 1, (mapY * mapSize) + mapSize - 1);
+                    glVertex2i((mapX * mapSize) + mapSize - 1, (mapY * mapSize) + mapSize - 1);
+                    glVertex2i((mapX * mapSize) + mapSize - 1, mapY * mapSize + 1);
+                    glEnd();
+                }*/
+            }
+            else {
                 hit = true;
             }
-            /*else { //Color the cells to debug
-                glBegin(GL_POLYGON);
-                glColor3f(0, 250, 0);
-                glVertex2i(mapX * mapSize + 1, mapY * mapSize + 1);
-                glVertex2i(mapX * mapSize + 1, (mapY * mapSize) + mapSize - 1);
-                glVertex2i((mapX * mapSize) + mapSize - 1, (mapY * mapSize) + mapSize - 1);
-                glVertex2i((mapX * mapSize) + mapSize - 1, mapY * mapSize + 1);
-                glEnd();
-            }*/
         }
-        else {
-            hit = true;
-        }
-        
-    } 
 
-    // Calculate the distance between the rayStarting point and the hit point
-    float fDistance = (side == 0) ? (mapX - rayX + (1 - stepX) / 2) / rayDirX
-        : (mapY - rayY + (1 - stepY) / 2) / rayDirY;
+        // Calculate the distance between the rayStarting point and the hit point
+        float fDistance = (side == 0) ? (mapX - rayX + (1 - stepX) / 2) / rayDirX
+            : (mapY - rayY + (1 - stepY) / 2) / rayDirY;
 
-    glLineWidth(3);
-    glColor3f(250, 0, 0);
-    glBegin(GL_LINES);
-    glVertex2i(rayX * mapSize, rayY * mapSize); 
-    glVertex2i(rayX * mapSize + fDistance*mapSize * rayDirX, rayY * mapSize + fDistance* mapSize * rayDirY);
-    glEnd(); 
-
-
+        glLineWidth(1);
+        glColor3f(250, 0, 0);
+        glBegin(GL_LINES);
+        glVertex2i(rayX * mapSize, rayY * mapSize);
+        glVertex2i(rayX * mapSize + fDistance * mapSize * rayDirX, rayY * mapSize + fDistance * mapSize * rayDirY);
+        glEnd();
+    }
 }
 
 
@@ -209,7 +211,6 @@ void initialization() {
 void display() {
     glClear(GL_COLOR_BUFFER_BIT);
     drawTileMap();
-
     drawRays();
     drawPlayer();
     glutSwapBuffers();
