@@ -9,6 +9,7 @@
 #define screenHeight 512
 
 
+
 float playerX, playerY; // player coordinates
 float playerDirX, playerDirY, playerAngle; //player rotation
 float speed; // player speed
@@ -32,23 +33,26 @@ void drawPlayer() {
     glVertex2i(playerX * mapSize, playerY * mapSize);
     glEnd();
 
-    glLineWidth(3);
+    /*glLineWidth(3);
     glBegin(GL_LINES);
     glVertex2i(playerX* mapSize, playerY* mapSize);
     glVertex2i(playerX * mapSize + playerDirX*5, playerY* mapSize +playerDirY*5);
-    glEnd();
+    glEnd();*/
 }
 
+/**
+*  Implementation of the DDA algorithm to calculate and draw raycasts.
+*  With the help of: https://lodev.org/cgtutor/raycasting.html
+*/
 void drawRays() {
-    //Implementation of the DDA algorithm
     
     float rayDirX = playerDirX;
     float rayDirY = playerDirY;
 
-    float rayX = (playerX);
-    float rayY = (playerY);
+    float rayX = playerX;
+    float rayY = playerY;
 
-    //which box of the map we're in
+    //ray map coordinates at each step
     int mapX = rayX;
     int mapY = rayY;
 
@@ -64,10 +68,10 @@ void drawRays() {
     int stepX;
     int stepY;
 
-    bool hit = false; //was there a wall hit?
-    int side; //was a NS or a EW wall hit?
+    bool hit = false; 
+    int side; //horizontal or vertical wall hit?
         
-    //calculate step and initial sideDist
+    //initialize step and calculate initial sideDists
     if (rayDirX < 0)
     {
         stepX = -1;
@@ -76,7 +80,7 @@ void drawRays() {
     else
     {
         stepX = 1;
-        sideDistX = ((float)mapX - rayX) * deltaDistX;
+        sideDistX = ((float)mapX + 1.0 - rayX) * deltaDistX;
     }
     if (rayDirY < 0)
     {
@@ -86,56 +90,61 @@ void drawRays() {
     else
     {
         stepY = 1;
-        sideDistY = ((float)mapY - rayY) * deltaDistY;
+        sideDistY = ((float)mapY + 1.0 - rayY) * deltaDistY;
     }
-
-    float fDistance = 0;
+    
     //perform DDA
-    do {
+    while (!hit) {
         //jump to next map square, either in x-direction, or in y-direction
         if (sideDistX < sideDistY)
         {
             mapX += stepX;
-            fDistance += sideDistX;
             sideDistX += deltaDistX;
             side = 0;
         }
         else
         {
             mapY += stepY;
-            fDistance += sideDistY;
             sideDistY += deltaDistY;
             side = 1;
         }
-        
-        //Check if ray has hit a wall
-        if (mapX >= 0 && mapX < mapSize && mapY >= 0 && mapY < mapSize) {
-            if (map[mapX + (mapY * mapHeight)] == 1) {
+
+        //Check if the ray is inside the map
+        if (mapX >= 0 && mapX < 8 && mapY >= 0 && mapY < 8) {
+            if (map[mapX + (mapY * mapHeight)] == 1) {  //Check if the ray has hit a wall
                 hit = true;
             }
+            /*else { //Color the cells to debug
+                glBegin(GL_POLYGON);
+                glColor3f(0, 250, 0);
+                glVertex2i(mapX * mapSize + 1, mapY * mapSize + 1);
+                glVertex2i(mapX * mapSize + 1, (mapY * mapSize) + mapSize - 1);
+                glVertex2i((mapX * mapSize) + mapSize - 1, (mapY * mapSize) + mapSize - 1);
+                glVertex2i((mapX * mapSize) + mapSize - 1, mapY * mapSize + 1);
+                glEnd();
+            }*/
         }
-        /*else {
-            glBegin(GL_POLYGON);
-            glVertex2i((int)(mapX / 64) * mapSize + 1, (int)(mapY / 64) * mapSize + 1);
-            glVertex2i((int)(mapX / 64) * mapSize + 1, ((int)(mapY / 64) * mapSize) + mapSize - 1);
-            glVertex2i(((int)(mapX / 64) * mapSize) + mapSize - 1, ((int)(mapY / 64) * mapSize) + mapSize - 1);
-            glVertex2i(((int)(mapX / 64) * mapSize) + mapSize - 1, (int)(mapY / 64) * mapSize + 1);
-            glEnd();
-        }*/
-    } while (!hit);
+        else {
+            hit = true;
+        }
+        
+    } 
 
-    //float sideDist = side == 1 ? sideDistX : sideDistY;
-    
-    //float wallDistance = sqrt(pow(mapX - playerX,2)+ pow(mapY - playerY, 2));
+    // Calculate the distance between the rayStarting point and the hit point
+    float fDistance = (side == 0) ? (mapX - rayX + (1 - stepX) / 2) / rayDirX
+        : (mapY - rayY + (1 - stepY) / 2) / rayDirY;
 
     glLineWidth(3);
     glColor3f(250, 0, 0);
     glBegin(GL_LINES);
-    glVertex2f(rayX*mapSize, rayY*mapSize);
-    glVertex2f((rayX*mapSize)+rayDirX*fDistance, (rayY*mapSize+rayDirY*fDistance));
-    glEnd();
+    glVertex2i(rayX * mapSize, rayY * mapSize); 
+    glVertex2i(rayX * mapSize + fDistance*mapSize * rayDirX, rayY * mapSize + fDistance* mapSize * rayDirY);
+    glEnd(); 
+
 
 }
+
+
 
 void drawTileMap() {
     for (int j = 0; j < mapHeight; j++) {
@@ -158,29 +167,29 @@ void drawTileMap() {
 }
 
 void keyBoardCheck(unsigned char key, int x, int y) {
-    if (key == 'q') {
+    if (key == 'd') {
         playerAngle -= 0.1;
         if (playerAngle < 0) {
             playerAngle += 2 * PI;
         }
-        playerDirX = cos(playerAngle)*5;
-        playerDirY = sin(playerAngle)*5;
+        playerDirX = cos(playerAngle); 
+        playerDirY = -sin(playerAngle);
     }
-    if (key == 'd') {
+    if (key == 'q') {
         playerAngle += 0.1;
         if (playerAngle > 2 * PI) {
             playerAngle = 0;
         }
-        playerDirX = cos(playerAngle)*5;
-        playerDirY = sin(playerAngle)*5;
+        playerDirX = cos(playerAngle); 
+        playerDirY = -sin(playerAngle);
     }
     if (key == 'z') {
-        playerX += playerDirX/mapSize;
-        playerY += playerDirY/mapSize;
+        playerX += speed*playerDirX/mapSize;
+        playerY += speed*playerDirY /mapSize;
     }
     if (key == 's') {
-        playerX -= playerDirX/mapSize;
-        playerY -= playerDirY/mapSize;
+        playerX -= speed * playerDirX / mapSize;
+        playerY -= speed * playerDirY / mapSize;
     }
     
     glutPostRedisplay();
@@ -189,18 +198,20 @@ void keyBoardCheck(unsigned char key, int x, int y) {
 void initialization() {
     glColor3f(0,0,0);
     gluOrtho2D(0, screenWidth, screenHeight, 0);
-    playerX = 2;
-    playerY = 2;
-    speed = 3;
-    playerDirX = cos(playerAngle)*5;
-    playerDirY = sin(playerAngle)*5;
+    playerX = 2.2;
+    playerY = 2.2;
+    playerAngle = PI/3;
+    speed = 5;
+    playerDirX = cos(playerAngle);
+    playerDirY = -sin(playerAngle);
 }
 
 void display() {
     glClear(GL_COLOR_BUFFER_BIT);
     drawTileMap();
+
+    drawRays();
     drawPlayer();
-    //drawRays();
     glutSwapBuffers();
 }
 
