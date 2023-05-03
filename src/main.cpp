@@ -146,7 +146,8 @@ void drawRays() {
             glEnd();
         }
 
-        // Draw 3D walls 
+        // Draw 3D walls ===========================================================================
+        //
         float startingPoint = 10;
         if (show2DView) {
             startingPoint = (screenWidth / 2) + 10;
