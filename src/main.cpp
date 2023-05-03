@@ -39,10 +39,9 @@ void drawPlayer() {
 *  With the help of: https://lodev.org/cgtutor/raycasting.html
 */
 void drawRays() {
-    
-    for (int i = -10; i < 20; i++) {
-
-        float rayAngle = playerAngle + (float)i / 20;
+    int rayNumber = 0;
+    for (int i = -30; i < 30; i++) {
+        float rayAngle = playerAngle + (float)i / 45;
         if (rayAngle < 0) {
             playerAngle += 2 * PI;
         }
@@ -120,7 +119,7 @@ void drawRays() {
                 }
                 /*else { //Color the cells to debug
                     glBegin(GL_POLYGON);
-                    glColor3f(0, 250, 0);
+                    glColor3f(0, 1, 0);
                     glVertex2i(mapX * mapSize + 1, mapY * mapSize + 1);
                     glVertex2i(mapX * mapSize + 1, (mapY * mapSize) + mapSize - 1);
                     glVertex2i((mapX * mapSize) + mapSize - 1, (mapY * mapSize) + mapSize - 1);
@@ -136,16 +135,45 @@ void drawRays() {
         // Calculate the distance between the rayStarting point and the hit point
         float fDistance = (side == 0) ? (mapX - rayX + (1 - stepX) / 2) / rayDirX
             : (mapY - rayY + (1 - stepY) / 2) / rayDirY;
+        fDistance *= mapSize;
 
         glLineWidth(1);
-        glColor3f(250, 0, 0);
+        glColor3f(1, 0, 0);
         glBegin(GL_LINES);
         glVertex2i(rayX * mapSize, rayY * mapSize);
-        glVertex2i(rayX * mapSize + fDistance * mapSize * rayDirX, rayY * mapSize + fDistance * mapSize * rayDirY);
+        glVertex2i(rayX * mapSize + fDistance * rayDirX, rayY * mapSize + fDistance * rayDirY);
         glEnd();
+
+        // Draw 3D walls 
+
+        // Fisheye effect correction
+        float correctedAngle = playerAngle - rayAngle;
+        if (correctedAngle < 0) correctedAngle += 2 * PI;
+        if (correctedAngle > 2*PI) correctedAngle -= 2 * PI;
+        fDistance = fDistance * cos(correctedAngle);
+
+        float lineHeight = (mapSize * (screenHeight/2))/fDistance;
+        if (lineHeight > (screenHeight / 2)) lineHeight = (screenHeight / 2);
+        float lineOffset = (screenHeight/3) - lineHeight / 2;
+
+        // Color to make depth more apparent
+        if (side == 0) {
+            glColor3f(1, 0, 0);
+        }
+        else if (side == 1) {
+            glColor3f(0.8, 0, 0);
+        }
+
+        glLineWidth(8);
+        glBegin(GL_LINES);
+        glVertex2i(rayNumber*8 + ((screenWidth/2)+10), lineOffset);
+        glVertex2i(rayNumber*8 + ((screenWidth/2)+10), lineHeight + lineOffset);
+        glEnd();
+
+
+        rayNumber++;
     }
 }
-
 
 
 void drawTileMap() {
@@ -167,6 +195,7 @@ void drawTileMap() {
         }
     }
 }
+
 
 void keyBoardCheck(unsigned char key, int x, int y) {
     if (key == 'd') {
