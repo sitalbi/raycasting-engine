@@ -39,14 +39,14 @@ void draw2DPlayer() {
 *  With the help of: https://lodev.org/cgtutor/raycasting.html
 */
 void drawRays() {
-    int rayNumber = 0;
+    int rayNumber = 60;
     for (int i = -30; i < 30; i++) {
-        float rayAngle = playerAngle + (float)i / 50;
+        float rayAngle = playerAngle + (float)i / 60;
         if (rayAngle < 0) {
             playerAngle += 2 * PI;
         }
-        if (playerAngle > 2*PI) {
-            playerAngle -=2*PI;
+        if (playerAngle > 2 * PI) {
+            playerAngle -= 2 * PI;
         }
 
         float rayDirX = cos(rayAngle);
@@ -117,15 +117,6 @@ void drawRays() {
                 if (map[mapX + (mapY * mapHeight)] == 1) {  //Check if the ray has hit a wall
                     hit = true;
                 }
-                /*else { //Color the cells to debug
-                    glBegin(GL_POLYGON);
-                    glColor3f(0, 1, 0);
-                    glVertex2i(mapX * mapSize + 1, mapY * mapSize + 1);
-                    glVertex2i(mapX * mapSize + 1, (mapY * mapSize) + mapSize - 1);
-                    glVertex2i((mapX * mapSize) + mapSize - 1, (mapY * mapSize) + mapSize - 1);
-                    glVertex2i((mapX * mapSize) + mapSize - 1, mapY * mapSize + 1);
-                    glEnd();
-                }*/
             }
             else {
                 hit = true;
@@ -146,7 +137,8 @@ void drawRays() {
             glEnd();
         }
 
-        // Draw 3D walls 
+        // Draw 3D walls ===========================================================================
+        //
         float startingPoint = 10;
         if (show2DView) {
             startingPoint = (screenWidth / 2) + 10;
@@ -155,19 +147,19 @@ void drawRays() {
         // Fisheye effect correction
         float correctedAngle = playerAngle - rayAngle;
         if (correctedAngle < 0) correctedAngle += 2 * PI;
-        if (correctedAngle > 2*PI) correctedAngle -= 2 * PI;
+        if (correctedAngle > 2 * PI) correctedAngle -= 2 * PI;
         fDistance = fDistance * cos(correctedAngle);
 
         float heightCheck = screenHeight;
-        int lineWidth = sqrt(mapSize)*2;
+        int lineWidth = sqrt(mapSize) * 2;
         if (show2DView) {
             heightCheck = screenHeight / 2;
             lineWidth = sqrt(mapSize);
         }
 
-        float lineHeight = (mapSize * heightCheck)/fDistance;
+        float lineHeight = (mapSize * heightCheck) / fDistance;
         if (lineHeight > heightCheck) lineHeight = heightCheck;
-        float lineOffset = (screenHeight/3) - lineHeight / 2;
+        float lineOffset = (screenHeight / 3) - lineHeight / 2;
 
         // Color to make depth more apparent
         if (side == 0) {
@@ -180,11 +172,11 @@ void drawRays() {
 
         glLineWidth(lineWidth);
         glBegin(GL_LINES);
-        glVertex2i(rayNumber* lineWidth + startingPoint, lineOffset);
-        glVertex2i(rayNumber* lineWidth + startingPoint, lineHeight + lineOffset);
+        glVertex2i(rayNumber * lineWidth + startingPoint, lineOffset);
+        glVertex2i(rayNumber * lineWidth + startingPoint, lineHeight + lineOffset);
         glEnd();
 
-        rayNumber++;
+        rayNumber--;
     }
 }
 
@@ -192,7 +184,7 @@ void drawRays() {
 void drawTileMap() {
     for (int j = 0; j < mapHeight; j++) {
         for (int i = 0; i < mapWidth; i++) {
-            if (map[i + (j * mapHeight)]==1) { // choose the tile color depending on the map
+            if (map[i + (j * mapHeight)] == 1) { // choose the tile color depending on the map
                 glColor3f(1, 1, 1); //white
             }
             else {
@@ -212,19 +204,19 @@ void drawTileMap() {
 
 void keyBoardCheck(unsigned char key, int x, int y) {
     if (key == 'q') {
-        playerAngle -= 0.1;
+        playerAngle += 0.1;
         if (playerAngle < 0) {
             playerAngle += 2 * PI;
         }
-        playerDirX = cos(playerAngle); 
+        playerDirX = cos(playerAngle);
         playerDirY = -sin(playerAngle);
     }
     if (key == 'd') {
-        playerAngle += 0.1;
+        playerAngle -= 0.1;
         if (playerAngle > 2 * PI) {
             playerAngle -= 2 * PI;
         }
-        playerDirX = cos(playerAngle); 
+        playerDirX = cos(playerAngle);
         playerDirY = -sin(playerAngle);
     }
     if (key == 'z') {
@@ -235,16 +227,16 @@ void keyBoardCheck(unsigned char key, int x, int y) {
         playerX -= speed * playerDirX / mapSize;
         playerY -= speed * playerDirY / mapSize;
     }
-    
+
     glutPostRedisplay();
 }
 
 void initialization() {
-    glColor3f(0,0,0);
+    glColor3f(0, 0, 0);
     gluOrtho2D(0, screenWidth, screenHeight, 0);
     playerX = 2.2;
     playerY = 2.2;
-    playerAngle = PI/3;
+    playerAngle = PI / 3;
     speed = 5;
     playerDirX = cos(playerAngle);
     playerDirY = -sin(playerAngle);
