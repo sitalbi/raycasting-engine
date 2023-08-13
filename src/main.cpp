@@ -7,7 +7,7 @@
 #define mapHeight 8
 #define screenWidth 1024
 #define screenHeight 512
-#define show2DView true
+#define show2DView false
 
 
 float playerX, playerY; // player coordinates
@@ -18,7 +18,7 @@ int mapSize = mapWidth * mapHeight;
 int map[] =
 { 1,1,1,1,1,1,1,1,
   1,0,0,0,0,0,0,1,
-  1,0,0,0,0,0,0,1,
+  1,0,0,0,1,0,0,1,
   1,0,0,0,0,0,0,1,
   1,0,0,1,0,0,0,1,
   1,0,0,1,0,0,1,1,
