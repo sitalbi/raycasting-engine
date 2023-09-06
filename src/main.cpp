@@ -3,11 +3,12 @@
 #include <GL/freeglut.h>
 #include <math.h>
 #define PI 3.141592653589793238
-#define mapWidth 8
-#define mapHeight 8
-#define screenWidth 1024
-#define screenHeight 512
+#define mapWidth 10
+#define mapHeight 10
+#define screenWidth 1280
+#define screenHeight 720
 #define show2DView false
+#define heightCheckMultiplier 0.8
 
 
 float playerX, playerY; // player coordinates
@@ -16,14 +17,14 @@ float speed; // player speed
 
 int mapSize = mapWidth * mapHeight;
 int map[] =
-{ 1,1,1,1,1,1,1,1,
-  1,0,0,0,0,0,0,1,
-  1,0,0,0,1,0,0,1,
-  1,0,0,0,0,0,0,1,
-  1,0,0,1,0,0,0,1,
-  1,0,0,1,0,0,1,1,
-  1,0,0,1,0,0,0,1,
-  1,1,1,1,1,1,1,1
+{ 1,1,1,1,1,1,1,1,1,1,
+  1,0,0,0,0,0,0,0,0,1,
+  1,0,0,0,1,0,0,1,1,1,
+  1,0,0,0,0,0,0,1,1,1,
+  1,0,0,1,0,0,0,0,1,1,
+  1,0,0,1,0,0,1,0,0,1,
+  1,0,0,1,0,0,0,1,0,1,
+  1,1,1,1,1,1,1,1,1,1
 };
 
 void draw2DPlayer() {
@@ -39,9 +40,9 @@ void draw2DPlayer() {
 *  With the help of: https://lodev.org/cgtutor/raycasting.html
 */
 void drawRays() {
-    int rayNumber = 60;
-    for (int i = -30; i < 30; i++) {
-        float rayAngle = playerAngle + (float)i / 60;
+    int rayNumber = 120;
+    for (int i = -60; i < 60; i++) {
+        float rayAngle = playerAngle + (float)i / 120;
         if (rayAngle < 0) {
             playerAngle += 2 * PI;
         }
@@ -150,8 +151,8 @@ void drawRays() {
         if (correctedAngle > 2 * PI) correctedAngle -= 2 * PI;
         fDistance = fDistance * cos(correctedAngle);
 
-        float heightCheck = screenHeight;
-        int lineWidth = sqrt(mapSize) * 2;
+        float heightCheck = screenHeight*heightCheckMultiplier;
+        int lineWidth = sqrt(mapSize);
         if (show2DView) {
             heightCheck = screenHeight / 2;
             lineWidth = sqrt(mapSize);
@@ -159,7 +160,7 @@ void drawRays() {
 
         float lineHeight = (mapSize * heightCheck) / fDistance;
         if (lineHeight > heightCheck) lineHeight = heightCheck;
-        float lineOffset = (screenHeight / 3) - lineHeight / 2;
+        float lineOffset = (screenHeight / 2) - lineHeight / 2;
 
         // Color to make depth more apparent
         if (side == 0) {
@@ -168,7 +169,6 @@ void drawRays() {
         else if (side == 1) {
             glColor3f(0.8, 0, 0);
         }
-
 
         glLineWidth(lineWidth);
         glBegin(GL_LINES);
