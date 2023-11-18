@@ -1,7 +1,7 @@
 # raycasting-engine
 Creating a simple raycasting rendering engine with OpenGL.
 
-TODO:
+## TODO:
 - wall collision
 - window resize
 - sprites
